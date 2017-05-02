@@ -43,7 +43,7 @@ public class BuyerAgent extends Agent {
 
     private class CheckOffersBehaviour extends CyclicBehaviour {
         public void action() {
-            MessageTemplate messageTemplate = MessageTemplate.MatchPerformative(ACLMessage.PROPOSE);
+            MessageTemplate messageTemplate = MessageTemplate.MatchPerformative(ACLMessage.CFP);
             ACLMessage message = BuyerAgent.this.receive(messageTemplate);
 
             if(message != null) {
@@ -51,16 +51,13 @@ public class BuyerAgent extends Agent {
                 String book = fields[0];
                 float proposedPrice = Float.valueOf(fields[0]);
 
-                ACLMessage reply = message.createReply();
-                reply.setContent(book);
-
                 if(BuyerAgent.this.books.get(book) != null && BuyerAgent.this.books.get(book) >= proposedPrice) {
-                    reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
-                } else {
-                    reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
-                }
+                    ACLMessage reply = message.createReply();
+                    reply.setPerformative(ACLMessage.PROPOSE);
+                    reply.setContent(book);
 
-                BuyerAgent.this.send(reply);
+                    BuyerAgent.this.send(reply);
+                }
             } else {
                 this.block();
             }

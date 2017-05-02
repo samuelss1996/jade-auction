@@ -34,7 +34,7 @@ public class SellerAgent extends Agent {
 
                 SellerAgent.this.books.put(key, newPrice, step);
 
-                ACLMessage message = new ACLMessage(ACLMessage.PROPOSE);
+                ACLMessage message = new ACLMessage(ACLMessage.CFP);
                 message.setLanguage("English");
                 message.setOntology("EnglishAuctionOntology");
                 message.setContent(String.format("%s||%f", key, newPrice));
