@@ -55,9 +55,7 @@ public class SellerAgent extends Agent {
                 for(DFAgentDescription agent : DFService.search(myAgent, template)) {
                     message.addReceiver(agent.getName());
                 }
-            } catch (FIPAException e) {
-                e.printStackTrace();
-            }
+            } catch (FIPAException ignored) { }
         }
     }
 }
