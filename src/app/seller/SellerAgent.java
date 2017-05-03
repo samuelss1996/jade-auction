@@ -18,6 +18,12 @@ public class SellerAgent extends Agent {
 
         this.books.put("Soy un libro", 15.5f, 5.5f);
         this.addBehaviour(new UpdatePriceBehaviour());
+
+        SellerGui.start().setAgent(this).setVisible(true);
+    }
+
+    public void addBook(String title, float initialPrice, float increment) {
+        this.books.put(title, initialPrice, increment);
     }
 
     private class UpdatePriceBehaviour extends TickerBehaviour {
