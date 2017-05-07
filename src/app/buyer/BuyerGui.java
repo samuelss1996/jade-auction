@@ -3,16 +3,19 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package javaapplication1;
+package app.buyer;
 
 import java.awt.Point;
 import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
  * @author Samuel
  */
 public class BuyerGui extends javax.swing.JFrame {
+
+    private BuyerAgent agent;
 
     /**
      * Creates new form BuyerGui
@@ -40,12 +43,7 @@ public class BuyerGui extends javax.swing.JFrame {
         jLabel1.setText("Comprador");
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
+            new Object [][] {},
             new String [] {
                 "Estado", "Libro", "Precio actual", "Máximo"
             }
@@ -112,7 +110,7 @@ public class BuyerGui extends javax.swing.JFrame {
          */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
+                if ("Windows".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
                 }
@@ -129,6 +127,16 @@ public class BuyerGui extends javax.swing.JFrame {
         //</editor-fold>
 
         return new BuyerGui();
+    }
+    
+    public BuyerGui setAgent(BuyerAgent agent) {
+        this.agent = agent;
+        return this;
+    }
+
+    public void addBook(String book, float price) {
+        DefaultTableModel model = (DefaultTableModel) this.jTable1.getModel();
+        model.addRow(new Object[]{"No en puja", book, price, 0.0f});
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
