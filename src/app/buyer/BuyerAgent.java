@@ -1,14 +1,12 @@
 package app.buyer;
 
+import app.buyer.behaviour.*;
 import jade.core.Agent;
-import jade.core.behaviours.CyclicBehaviour;
-import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
-import jade.lang.acl.ACLMessage;
-import jade.lang.acl.MessageTemplate;
+import jade.util.leap.Iterator;
 
 import java.util.HashMap;
 
@@ -19,8 +17,6 @@ public class BuyerAgent extends Agent {
     @Override
     protected void setup() {
         this.books = new HashMap<String, Float>();
-        this.books.put("Soy un libro", 25.5f);
-
         this.gui = BuyerGui.start();
         this.gui.setAgent(this).setVisible(true);
 
@@ -36,9 +32,32 @@ public class BuyerAgent extends Agent {
             DFService.register(this, agentDescription);
         } catch (FIPAException ignored) { }
 
-        this.addBehaviour(new RequestCurrentBooksBehaviour());
-        this.addBehaviour(new CheckOffersBehaviour());
-        this.addBehaviour(new GetNotifiedForNewBooks());
+        this.addBehaviour(new RequestCurrentBooksBehaviour(this));
+        this.addBehaviour(new UpdateOffersBehaviour(this));
+        this.addBehaviour(new GetNotifiedForNewBooksBehaviour(this));
+        this.addBehaviour(new WinBookBehaviour(this));
+    }
+
+    public void deregisterBook(String book) {
+        try {
+            DFAgentDescription agentDescription = new DFAgentDescription();
+            agentDescription.setName(this.getAID());
+
+            DFAgentDescription completeAgentDescription  = DFService.search(this, agentDescription)[0];
+
+            Iterator servicesIterator = completeAgentDescription.getAllServices();
+            while(servicesIterator.hasNext()) {
+                ServiceDescription service = (ServiceDescription) servicesIterator.next();
+                if(service.getType().equals("book " + book) && service.getName().equals("book " + book)) {
+                    servicesIterator.remove();
+                    break;
+                }
+            }
+
+            DFService.modify(this, completeAgentDescription);
+        } catch (FIPAException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -48,70 +67,16 @@ public class BuyerAgent extends Agent {
         } catch (FIPAException ignored) {}
     }
 
-    private class CheckOffersBehaviour extends CyclicBehaviour {
-        public void action() {
-            MessageTemplate messageTemplate = MessageTemplate.MatchPerformative(ACLMessage.CFP);
-            ACLMessage message = BuyerAgent.this.receive(messageTemplate);
-
-            if(message != null) {
-                String[] fields = message.getContent().split("\\|\\|");
-                String book = fields[0];
-                float proposedPrice = Float.valueOf(fields[1]);
-
-                if(BuyerAgent.this.books.get(book) != null && BuyerAgent.this.books.get(book) >= proposedPrice) {
-                    ACLMessage reply = message.createReply();
-                    reply.setPerformative(ACLMessage.PROPOSE);
-                    reply.setContent(book);
-
-                    BuyerAgent.this.send(reply);
-                }
-            } else {
-                this.block();
-            }
-        }
+    public void bidForBook(String book, float maxPrice) {
+        this.books.put(book, maxPrice);
+        this.addBehaviour(new BidBookBehaviour(this, book));
     }
 
-    private class GetNotifiedForNewBooks extends CyclicBehaviour {
-        public void action() {
-            MessageTemplate messageTemplate = MessageTemplate.MatchPerformative(ACLMessage.INFORM);
-            ACLMessage message = BuyerAgent.this.receive(messageTemplate);
-
-            if(message != null) {
-                for(String line : message.getContent().split("\\|\\|\\|")) {
-                    String[] fields = line.split("\\|\\|");
-                    String book = fields[0];
-                    float price = Float.valueOf(fields[1]);
-
-                    BuyerAgent.this.gui.addBook(book, price);
-                }
-            } else {
-                this.block();
-            }
-        }
+    public HashMap<String,Float> getBooks() {
+        return books;
     }
 
-    private class RequestCurrentBooksBehaviour extends OneShotBehaviour {
-        public void action() {
-            ACLMessage message = new ACLMessage(ACLMessage.REQUEST);
-            message.setLanguage("English");
-            message.setOntology("EnglishAuctionOntology");
-
-            this.addReceiversToMessage(message);
-            BuyerAgent.this.send(message);
-        }
-
-        private void addReceiversToMessage(ACLMessage message) {
-            try {
-                DFAgentDescription template = new DFAgentDescription();
-                ServiceDescription serviceDescription = new ServiceDescription();
-
-                serviceDescription.setType("seller");
-                template.addServices(serviceDescription);
-
-                for(DFAgentDescription agent : DFService.search(BuyerAgent.this, template)) {
-                    message.addReceiver(agent.getName());
-                }
-            } catch (FIPAException ignored) { }
-        }
+    public BuyerGui getGui() {
+        return gui;
     }
 }

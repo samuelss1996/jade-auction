@@ -219,7 +219,27 @@ public class SellerGui extends javax.swing.JFrame {
         this.agent = agent;
         return this;
     }
+
+    public void updatePrice(String book, float newPrice) {
+        DefaultTableModel tableModel = (DefaultTableModel) this.jTable2.getModel();
+
+        for(int i = 0; i < tableModel.getRowCount(); i++) {
+            if(tableModel.getValueAt(i, 0).equals(book)) {
+                tableModel.setValueAt(newPrice, i, 3);
+                break;
+            }
+        }
+    }
+
+    public void removeBook(String book) {
+        DefaultTableModel tableModel = (DefaultTableModel) this.jTable2.getModel();
+
+        for(int i = 0; i < tableModel.getRowCount(); i++) {
+            if(tableModel.getValueAt(i, 0).equals(book)) {
+                tableModel.removeRow(i);
+                break;
+            }
+        }
+    }
     // End of variables declaration//GEN-END:variables
-
-
 }

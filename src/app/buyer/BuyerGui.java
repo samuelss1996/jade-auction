@@ -6,7 +6,7 @@
 package app.buyer;
 
 import java.awt.Point;
-import javax.swing.JTable;
+import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -38,9 +38,12 @@ public class BuyerGui extends javax.swing.JFrame {
         jTable1 = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Comprador");
 
         jLabel1.setFont(new java.awt.Font("Tahoma", 0, 36)); // NOI18N
         jLabel1.setText("Comprador");
+
+        setResizable(false);
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {},
@@ -94,11 +97,29 @@ public class BuyerGui extends javax.swing.JFrame {
 
     private void onRowClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_onRowClicked
         JTable table = (JTable) evt.getSource();
+        DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
         Point p = evt.getPoint();
         int row = table.rowAtPoint(p);
         
         if(evt.getClickCount() == 2) {
-            // TODO
+            if(tableModel.getValueAt(row, 0).equals("No en puja")) {
+                String result = (String) JOptionPane.showInputDialog(this, "Introduzca el precio máximo que está dispuesto a pagar", "Pujar",
+                        JOptionPane.QUESTION_MESSAGE, null, null, null);
+
+                if(result != null && result.length() > 0) {
+                    tableModel.setValueAt("En puja", row, 0);
+                    tableModel.setValueAt(Float.valueOf(result), row, 3);
+                    this.agent.bidForBook((String) tableModel.getValueAt(row, 1), Float.valueOf(result));
+                }
+            } else {
+                String book = (String) tableModel.getValueAt(row, 1);
+                int confirm = JOptionPane.showConfirmDialog(this, "Estás seguro de que deseas abandonar la puja para " + book,
+                        "Abandonar la puja", JOptionPane.YES_NO_OPTION);
+
+                if(confirm == JOptionPane.YES_OPTION) {
+                    this.agent.deregisterBook(book);
+                }
+            }
         }
     }//GEN-LAST:event_onRowClicked
 
@@ -134,9 +155,48 @@ public class BuyerGui extends javax.swing.JFrame {
         return this;
     }
 
-    public void addBook(String book, float price) {
+    public void addBook(String book) {
         DefaultTableModel model = (DefaultTableModel) this.jTable1.getModel();
-        model.addRow(new Object[]{"No en puja", book, price, 0.0f});
+        model.addRow(new Object[]{"No en puja", book, null, null});
+    }
+
+    public void updatePrice(String book, float newPrice) {
+        DefaultTableModel model = (DefaultTableModel) this.jTable1.getModel();
+
+        for(int i = 0; i < model.getRowCount(); i++) {
+            if(model.getValueAt(i, 1).equals(book)) {
+                model.setValueAt(newPrice, i, 2);
+                break;
+            }
+        }
+    }
+
+    // TODO: do not delete
+    public void bookPriceExceeded(String book) {
+        DefaultTableModel model = (DefaultTableModel) this.jTable1.getModel();
+
+        for(int i = 0; i < model.getRowCount(); i++) {
+            if(model.getValueAt(i, 1).equals(book)) {
+                model.removeRow(i);
+                break;
+            }
+        }
+
+        JOptionPane.showMessageDialog(this, String.format("El libro %s ha excedido tu precio máximo", book));
+    }
+
+    // TODO: do not delete
+    public void bookWon(String book) {
+        DefaultTableModel model = (DefaultTableModel) this.jTable1.getModel();
+
+        for(int i = 0; i < model.getRowCount(); i++) {
+            if(model.getValueAt(i, 1).equals(book)) {
+                model.removeRow(i);
+                break;
+            }
+        }
+
+        JOptionPane.showMessageDialog(this, String.format("Enhorabuena, has conseguido el libro %s", book));
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
