@@ -29,7 +29,6 @@ public class UpdateOffersBehaviour extends CyclicBehaviour {
                 this.buyerAgent.getGui().updatePrice(book, proposedPrice);
                 this.buyerAgent.send(reply);
             } else {
-                this.buyerAgent.getBooks().remove(book);
                 this.buyerAgent.deregisterBook(book);
                 this.buyerAgent.getGui().bookPriceExceeded(book);
             }

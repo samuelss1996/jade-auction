@@ -1,7 +1,5 @@
 package app.seller;
 
-import app.seller.behaviour.InformCurrentBooksBehaviour;
-import app.seller.behaviour.NotifyNewBookBehaviour;
 import app.seller.behaviour.UpdatePriceBehaviour;
 import app.seller.util.TwoValuesHashMap;
 import jade.core.Agent;
@@ -31,8 +29,6 @@ public class SellerAgent extends Agent {
             agentDescription.addServices(serviceDescription);
             DFService.register(this, agentDescription);
         } catch (FIPAException ignored) { }
-
-        this.addBehaviour(new InformCurrentBooksBehaviour(this));
     }
 
     @Override
@@ -45,7 +41,6 @@ public class SellerAgent extends Agent {
     public void addBook(String title, float initialPrice, float increment) {
         this.books.put(title, initialPrice, increment);
 
-        this.addBehaviour(new NotifyNewBookBehaviour(this, title));
         this.addBehaviour(new UpdatePriceBehaviour(this, title));
     }
 
@@ -59,6 +54,5 @@ public class SellerAgent extends Agent {
 
     public void removeBook(String book) {
         this.books.remove(book);
-        this.gui.removeBook(book);
     }
 }

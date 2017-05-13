@@ -5,8 +5,6 @@
  */
 package app.seller;
 
-import jade.core.Agent;
-
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -72,29 +70,14 @@ public class SellerGui extends javax.swing.JFrame {
         });
         jScrollPane2.setViewportView(jTable2);
 
-        book.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                bookActionPerformed(evt);
-            }
-        });
 
         jLabel1.setText("Libro:");
 
         jLabel2.setText("Precio inicial:");
 
-        initialPrice.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                initialPriceActionPerformed(evt);
-            }
-        });
 
         jLabel3.setText("Incremento:");
 
-        increment.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                incrementActionPerformed(evt);
-            }
-        });
 
         jButton1.setText("Añadir subasta");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -155,24 +138,12 @@ public class SellerGui extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void initialPriceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_initialPriceActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_initialPriceActionPerformed
-
-    private void bookActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bookActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_bookActionPerformed
-
-    private void incrementActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_incrementActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_incrementActionPerformed
-
     private void addAuction(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addAuction
         String book = this.book.getText();
         float price = Float.valueOf(this.initialPrice.getText());
         float increment = Float.valueOf(this.increment.getText());
 
-        this.agent.addBook(book, price, increment);
+        this.agent.addBook(book, price - increment, increment);
         ((DefaultTableModel)this.jTable2.getModel()).addRow(new Object[]{book, price, increment, price});
     }//GEN-LAST:event_addAuction
 
@@ -226,17 +197,6 @@ public class SellerGui extends javax.swing.JFrame {
         for(int i = 0; i < tableModel.getRowCount(); i++) {
             if(tableModel.getValueAt(i, 0).equals(book)) {
                 tableModel.setValueAt(newPrice, i, 3);
-                break;
-            }
-        }
-    }
-
-    public void removeBook(String book) {
-        DefaultTableModel tableModel = (DefaultTableModel) this.jTable2.getModel();
-
-        for(int i = 0; i < tableModel.getRowCount(); i++) {
-            if(tableModel.getValueAt(i, 0).equals(book)) {
-                tableModel.removeRow(i);
                 break;
             }
         }

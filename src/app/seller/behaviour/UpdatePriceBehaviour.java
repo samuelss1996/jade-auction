@@ -19,12 +19,14 @@ public class UpdatePriceBehaviour extends TickerBehaviour {
 
     private float currentPrice;
     private float step;
+    private boolean firstTime;
 
     public UpdatePriceBehaviour(SellerAgent sellerAgent, String book) {
         super(sellerAgent, 10000);
 
         this.book = book;
         this.sellerAgent = sellerAgent;
+        this.firstTime = true;
     }
 
     protected void onTick() {
@@ -37,6 +39,10 @@ public class UpdatePriceBehaviour extends TickerBehaviour {
         message.setOntology("EnglishAuctionOntology");
 
         if(this.addReceiversToMessage(message)) {
+            if(!this.firstTime) {
+                this.currentPrice -= this.step;
+            }
+
             message.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
             message.setContent(String.format(Locale.US, "%s||%f", this.book, this.currentPrice));
 
@@ -50,6 +56,7 @@ public class UpdatePriceBehaviour extends TickerBehaviour {
         }
 
         this.sellerAgent.send(message);
+        this.firstTime = false;
     }
 
     private boolean addReceiversToMessage(ACLMessage message) {

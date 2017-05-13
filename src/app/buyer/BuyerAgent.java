@@ -32,9 +32,7 @@ public class BuyerAgent extends Agent {
             DFService.register(this, agentDescription);
         } catch (FIPAException ignored) { }
 
-        this.addBehaviour(new RequestCurrentBooksBehaviour(this));
         this.addBehaviour(new UpdateOffersBehaviour(this));
-        this.addBehaviour(new GetNotifiedForNewBooksBehaviour(this));
         this.addBehaviour(new WinBookBehaviour(this));
     }
 

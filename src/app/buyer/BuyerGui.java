@@ -3,22 +3,22 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
 package app.buyer;
 
-import java.awt.Point;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
 
 /**
  *
- * @author Samuel
+ * @author Ada
  */
 public class BuyerGui extends javax.swing.JFrame {
-
     private BuyerAgent agent;
 
     /**
-     * Creates new form BuyerGui
+     * Creates new form SellerGui
      */
     public BuyerGui() {
         initComponents();
@@ -34,19 +34,30 @@ public class BuyerGui extends javax.swing.JFrame {
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        book = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
+        maxPrice = new javax.swing.JTextField();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        booksTable = new javax.swing.JTable();
+        jButton1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setResizable(false);
+
         setTitle("Comprador");
 
         jLabel1.setFont(new java.awt.Font("Tahoma", 0, 36)); // NOI18N
         jLabel1.setText("Comprador");
 
-        setResizable(false);
+        jLabel2.setText("Libro:");
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {},
+        jLabel3.setText("Precio máximo:");
+
+        booksTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
             new String [] {
                 "Estado", "Libro", "Precio actual", "Máximo"
             }
@@ -55,7 +66,7 @@ public class BuyerGui extends javax.swing.JFrame {
                 java.lang.String.class, java.lang.String.class, java.lang.Float.class, java.lang.Float.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false, false
+                false, false, true, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -66,30 +77,59 @@ public class BuyerGui extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        jTable1.addMouseListener(new java.awt.event.MouseAdapter() {
+        booksTable.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mousePressed(java.awt.event.MouseEvent evt) {
                 onRowClicked(evt);
             }
         });
-        jScrollPane1.setViewportView(jTable1);
+        jScrollPane1.setViewportView(booksTable);
+
+        jButton1.setText("Añadir interés");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                onAddBookButtonClicked(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 532, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 584, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
-                .addGap(170, 170, 170)
-                .addComponent(jLabel1)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(190, 190, 190)
+                        .addComponent(jLabel1)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(book)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jButton1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE)
+                            .addComponent(maxPrice, javax.swing.GroupLayout.Alignment.TRAILING))))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 286, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(book, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel3)
+                    .addComponent(maxPrice, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jButton1)
+                .addGap(18, 18, 18)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 218, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         pack();
@@ -100,28 +140,24 @@ public class BuyerGui extends javax.swing.JFrame {
         DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
         Point p = evt.getPoint();
         int row = table.rowAtPoint(p);
-        
-        if(evt.getClickCount() == 2) {
-            if(tableModel.getValueAt(row, 0).equals("No en puja")) {
-                String result = (String) JOptionPane.showInputDialog(this, "Introduzca el precio máximo que está dispuesto a pagar", "Pujar",
-                        JOptionPane.QUESTION_MESSAGE, null, null, null);
 
-                if(result != null && result.length() > 0) {
-                    tableModel.setValueAt("En puja", row, 0);
-                    tableModel.setValueAt(Float.valueOf(result), row, 3);
-                    this.agent.bidForBook((String) tableModel.getValueAt(row, 1), Float.valueOf(result));
-                }
-            } else {
+        if(evt.getClickCount() == 2) {
+            if(tableModel.getValueAt(row, 0).equals("Esperando vendedor") || tableModel.getValueAt(row, 0).equals("En puja")) {
                 String book = (String) tableModel.getValueAt(row, 1);
                 int confirm = JOptionPane.showConfirmDialog(this, "Estás seguro de que deseas abandonar la puja para " + book,
                         "Abandonar la puja", JOptionPane.YES_NO_OPTION);
 
                 if(confirm == JOptionPane.YES_OPTION) {
                     this.agent.deregisterBook(book);
+                    tableModel.removeRow(row);
                 }
             }
         }
     }//GEN-LAST:event_onRowClicked
+
+    private void onAddBookButtonClicked(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onAddBookButtonClicked
+        this.addBook(this.book.getText(), Float.valueOf(this.maxPrice.getText()));
+    }//GEN-LAST:event_onAddBookButtonClicked
 
     public static BuyerGui start() {
         /* Set the Nimbus look and feel */
@@ -149,35 +185,32 @@ public class BuyerGui extends javax.swing.JFrame {
 
         return new BuyerGui();
     }
-    
-    public BuyerGui setAgent(BuyerAgent agent) {
-        this.agent = agent;
-        return this;
-    }
 
-    public void addBook(String book) {
-        DefaultTableModel model = (DefaultTableModel) this.jTable1.getModel();
-        model.addRow(new Object[]{"No en puja", book, null, null});
+    public void addBook(String book, float maxPrice) {
+        DefaultTableModel model = (DefaultTableModel) this.booksTable.getModel();
+        model.addRow(new Object[]{"Esperando vendedor", book, null, maxPrice});
+
+        this.agent.bidForBook(book, maxPrice);
     }
 
     public void updatePrice(String book, float newPrice) {
-        DefaultTableModel model = (DefaultTableModel) this.jTable1.getModel();
+        DefaultTableModel model = (DefaultTableModel) this.booksTable.getModel();
 
         for(int i = 0; i < model.getRowCount(); i++) {
             if(model.getValueAt(i, 1).equals(book)) {
+                model.setValueAt("En puja", i, 0);
                 model.setValueAt(newPrice, i, 2);
                 break;
             }
         }
     }
 
-    // TODO: do not delete
     public void bookPriceExceeded(String book) {
-        DefaultTableModel model = (DefaultTableModel) this.jTable1.getModel();
+        DefaultTableModel model = (DefaultTableModel) this.booksTable.getModel();
 
         for(int i = 0; i < model.getRowCount(); i++) {
             if(model.getValueAt(i, 1).equals(book)) {
-                model.removeRow(i);
+                model.setValueAt("Máximo excedido", i, 0);
                 break;
             }
         }
@@ -185,23 +218,33 @@ public class BuyerGui extends javax.swing.JFrame {
         JOptionPane.showMessageDialog(this, String.format("El libro %s ha excedido tu precio máximo", book));
     }
 
-    // TODO: do not delete
-    public void bookWon(String book) {
-        DefaultTableModel model = (DefaultTableModel) this.jTable1.getModel();
+    public void bookWon(String book, float price) {
+        DefaultTableModel model = (DefaultTableModel) this.booksTable.getModel();
 
         for(int i = 0; i < model.getRowCount(); i++) {
             if(model.getValueAt(i, 1).equals(book)) {
-                model.removeRow(i);
+                model.setValueAt("Libro ganado", i, 0);
+                model.setValueAt(price, i, 2);
                 break;
             }
         }
 
-        JOptionPane.showMessageDialog(this, String.format("Enhorabuena, has conseguido el libro %s", book));
+        JOptionPane.showMessageDialog(this, String.format("Enhorabuena, has conseguido el libro %s por %f euros", book, price));
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField book;
+    private javax.swing.JTable booksTable;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable jTable1;
+    private javax.swing.JTextField maxPrice;
+
+    public BuyerGui setAgent(BuyerAgent agent) {
+        this.agent = agent;
+        return this;
+    }
     // End of variables declaration//GEN-END:variables
 }

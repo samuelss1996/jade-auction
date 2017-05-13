@@ -24,12 +24,10 @@ public class WinBookBehaviour extends CyclicBehaviour {
             this.buyerAgent.deregisterBook(book);
 
             if(this.buyerAgent.getBooks().get(book) >= price) {
-                this.buyerAgent.getGui().bookWon(book);
+                this.buyerAgent.getGui().bookWon(book, price);
             } else {
                 this.buyerAgent.getGui().bookPriceExceeded(book);
             }
-
-            this.buyerAgent.getBooks().remove(book);
         } else {
             this.block();
         }
