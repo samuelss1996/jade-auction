@@ -1,6 +1,17 @@
 package app.seller.behaviour;
 
+import app.ontology.Book;
+import app.ontology.Offer;
+import app.ontology.SendOffer;
+import app.ontology.WinOffer;
+import app.ontology.impl.DefaultBook;
+import app.ontology.impl.DefaultOffer;
+import app.ontology.impl.DefaultSendOffer;
+import app.ontology.impl.DefaultWinOffer;
 import app.seller.SellerAgent;
+import jade.content.lang.Codec;
+import jade.content.onto.OntologyException;
+import jade.content.onto.basic.Action;
 import jade.core.AID;
 import jade.core.behaviours.TickerBehaviour;
 import jade.domain.DFService;
@@ -9,11 +20,10 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 
-import java.util.Locale;
 import java.util.Random;
 
 public class UpdatePriceBehaviour extends TickerBehaviour {
-    private String book;
+    private String bookTitle;
     private SellerAgent sellerAgent;
     private AID potentialWinner;
 
@@ -21,42 +31,67 @@ public class UpdatePriceBehaviour extends TickerBehaviour {
     private float step;
     private boolean firstTime;
 
-    public UpdatePriceBehaviour(SellerAgent sellerAgent, String book) {
+    public UpdatePriceBehaviour(SellerAgent sellerAgent, String bookTitle) {
         super(sellerAgent, 10000);
 
-        this.book = book;
+        this.bookTitle = bookTitle;
         this.sellerAgent = sellerAgent;
         this.firstTime = true;
     }
 
     protected void onTick() {
-        float oldPrice = this.sellerAgent.getBooks().getFirstValue(this.book);
-        this.step = this.sellerAgent.getBooks().getSecondValue(this.book);
+        float oldPrice = this.sellerAgent.getBooks().getFirstValue(this.bookTitle);
+        this.step = this.sellerAgent.getBooks().getSecondValue(this.bookTitle);
         this.currentPrice = oldPrice + this.step;
+        System.out.println("a");
 
-        ACLMessage message = new ACLMessage(ACLMessage.CFP);
-        message.setLanguage("English");
-        message.setOntology("EnglishAuctionOntology");
+        try {
+            ACLMessage message = new ACLMessage(ACLMessage.CFP);
+            message.setLanguage(this.sellerAgent.getCodec().getName());
+            message.setOntology(this.sellerAgent.getOntology().getName());
 
-        if(this.addReceiversToMessage(message)) {
-            if(!this.firstTime) {
-                this.currentPrice -= this.step;
+            if(this.addReceiversToMessage(message)) {
+                if(!this.firstTime && this.potentialWinner != null) {
+                    this.currentPrice -= this.step;
+                }
+
+                WinOffer winOffer = new DefaultWinOffer();
+                Offer offer = new DefaultOffer();
+                Book book = new DefaultBook();
+
+                book.setTitle(this.bookTitle);
+                offer.setBook(book);
+                offer.setPrice(this.currentPrice);
+                winOffer.setWonOffer(offer);
+
+                message.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
+                this.sellerAgent.getContentManager().fillContent(message, new Action(this.sellerAgent.getAID(), winOffer));
+
+                this.sellerAgent.removeBook(this.bookTitle);
+                this.sellerAgent.removeBehaviour(this);
+            } else {
+                SendOffer sendOffer = new DefaultSendOffer();
+                Offer offer = new DefaultOffer();
+                Book book = new DefaultBook();
+
+                book.setTitle(this.bookTitle);
+                offer.setBook(book);
+                offer.setPrice(this.currentPrice);
+                sendOffer.setOffer(offer);
+
+                this.sellerAgent.getContentManager().fillContent(message, new Action(this.sellerAgent.getAID(), sendOffer));
+
+                this.sellerAgent.getBooks().put(this.bookTitle, this.currentPrice, step);
+                this.sellerAgent.getGui().updatePrice(this.bookTitle, this.currentPrice);
             }
 
-            message.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
-            message.setContent(String.format(Locale.US, "%s||%f", this.book, this.currentPrice));
-
-            this.sellerAgent.removeBook(this.book);
-            this.sellerAgent.removeBehaviour(this);
-        } else {
-            message.setContent(String.format(Locale.US, "%s||%f", this.book, this.currentPrice));
-
-            this.sellerAgent.getBooks().put(this.book, this.currentPrice, step);
-            this.sellerAgent.getGui().updatePrice(this.book, this.currentPrice);
+            this.sellerAgent.send(message);
+            this.firstTime = false;
+        } catch (Codec.CodecException e) {
+            e.printStackTrace();
+        } catch (OntologyException e) {
+            e.printStackTrace();
         }
-
-        this.sellerAgent.send(message);
-        this.firstTime = false;
     }
 
     private boolean addReceiversToMessage(ACLMessage message) {
@@ -64,8 +99,8 @@ public class UpdatePriceBehaviour extends TickerBehaviour {
             DFAgentDescription template = new DFAgentDescription();
             ServiceDescription serviceDescription = new ServiceDescription();
 
-            serviceDescription.setType("book " + this.book);
-            serviceDescription.setName("book " + this.book);
+            serviceDescription.setType("book " + this.bookTitle);
+            serviceDescription.setName("book " + this.bookTitle);
             template.addServices(serviceDescription);
 
             DFAgentDescription[] matchingAgents = DFService.search(this.sellerAgent, template);

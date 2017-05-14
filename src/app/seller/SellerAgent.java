@@ -1,7 +1,11 @@
 package app.seller;
 
+import app.ontology.AuctionOntology;
 import app.seller.behaviour.UpdatePriceBehaviour;
 import app.seller.util.TwoValuesHashMap;
+import jade.content.lang.Codec;
+import jade.content.lang.leap.LEAPCodec;
+import jade.content.onto.Ontology;
 import jade.core.Agent;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -9,11 +13,19 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 
 public class SellerAgent extends Agent {
+    private Codec codec;
+    private Ontology ontology;
+
     private TwoValuesHashMap<String, Float, Float> books;
     private SellerGui gui;
 
     @Override
     protected void setup() {
+        this.codec = new LEAPCodec();
+        this.ontology = AuctionOntology.getInstance();
+        this.getContentManager().registerLanguage(this.codec);
+        this.getContentManager().registerOntology(this.ontology);
+
         this.books = new TwoValuesHashMap<String, Float, Float>();
         this.gui = SellerGui.start();
         this.gui.setAgent(this).setVisible(true);
@@ -54,5 +66,13 @@ public class SellerAgent extends Agent {
 
     public void removeBook(String book) {
         this.books.remove(book);
+    }
+
+    public Codec getCodec() {
+        return codec;
+    }
+
+    public Ontology getOntology() {
+        return ontology;
     }
 }

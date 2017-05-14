@@ -1,6 +1,12 @@
 package app.buyer;
 
-import app.buyer.behaviour.*;
+import app.buyer.behaviour.BidBookBehaviour;
+import app.buyer.behaviour.UpdateOffersBehaviour;
+import app.buyer.behaviour.WinBookBehaviour;
+import app.ontology.AuctionOntology;
+import jade.content.lang.Codec;
+import jade.content.lang.leap.LEAPCodec;
+import jade.content.onto.Ontology;
 import jade.core.Agent;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -11,11 +17,19 @@ import jade.util.leap.Iterator;
 import java.util.HashMap;
 
 public class BuyerAgent extends Agent {
+    private Codec codec;
+    private Ontology ontology;
+
     private HashMap<String, Float> books;
     private BuyerGui gui;
 
     @Override
     protected void setup() {
+        this.codec = new LEAPCodec();
+        this.ontology = AuctionOntology.getInstance();
+        this.getContentManager().registerLanguage(this.codec);
+        this.getContentManager().registerOntology(this.ontology);
+
         this.books = new HashMap<String, Float>();
         this.gui = BuyerGui.start();
         this.gui.setAgent(this).setVisible(true);
@@ -76,5 +90,13 @@ public class BuyerAgent extends Agent {
 
     public BuyerGui getGui() {
         return gui;
+    }
+
+    public Codec getCodec() {
+        return codec;
+    }
+
+    public Ontology getOntology() {
+        return ontology;
     }
 }

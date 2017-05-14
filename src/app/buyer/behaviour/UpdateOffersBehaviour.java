@@ -1,6 +1,11 @@
 package app.buyer.behaviour;
 
 import app.buyer.BuyerAgent;
+import app.ontology.SendOffer;
+import jade.content.lang.Codec;
+import jade.content.onto.OntologyException;
+import jade.content.onto.UngroundedException;
+import jade.content.onto.basic.Action;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
@@ -13,24 +18,29 @@ public class UpdateOffersBehaviour extends CyclicBehaviour {
     }
 
     public void action() {
-        MessageTemplate messageTemplate = MessageTemplate.MatchPerformative(ACLMessage.CFP);
+        MessageTemplate messageTemplate = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.CFP),
+                MessageTemplate.and(MessageTemplate.MatchOntology(this.buyerAgent.getOntology().getName()),
+                        MessageTemplate.MatchLanguage(this.buyerAgent.getCodec().getName())));
         ACLMessage message = this.buyerAgent.receive(messageTemplate);
 
         if(message != null) {
-            String[] fields = message.getContent().split("\\|\\|");
-            String book = fields[0];
-            float proposedPrice = Float.valueOf(fields[1]);
+            try {
+                Action action = (Action) this.buyerAgent.getContentManager().extractContent(message);
+                SendOffer sendOffer = (SendOffer) action.getAction();
 
-            if(this.buyerAgent.getBooks().get(book) != null && this.buyerAgent.getBooks().get(book) >= proposedPrice) {
-                ACLMessage reply = message.createReply();
-                reply.setPerformative(ACLMessage.PROPOSE);
-                reply.setContent(book);
+                String bookTitle = sendOffer.getOffer().getBook().getTitle();
+                float proposedPrice = sendOffer.getOffer().getPrice();
 
-                this.buyerAgent.getGui().updatePrice(book, proposedPrice);
-                this.buyerAgent.send(reply);
-            } else {
-                this.buyerAgent.deregisterBook(book);
-                this.buyerAgent.getGui().bookPriceExceeded(book);
+                if (this.buyerAgent.getBooks().get(bookTitle) == null || this.buyerAgent.getBooks().get(bookTitle) < proposedPrice) {
+                    this.buyerAgent.deregisterBook(bookTitle);
+                    this.buyerAgent.getGui().bookPriceExceeded(bookTitle);
+                }
+            } catch (UngroundedException e) {
+                e.printStackTrace();
+            } catch (OntologyException e) {
+                e.printStackTrace();
+            } catch (Codec.CodecException e) {
+                e.printStackTrace();
             }
         } else {
             this.block();
