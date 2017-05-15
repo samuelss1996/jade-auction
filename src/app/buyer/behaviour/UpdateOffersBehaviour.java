@@ -31,7 +31,9 @@ public class UpdateOffersBehaviour extends CyclicBehaviour {
                 String bookTitle = sendOffer.getOffer().getBook().getTitle();
                 float proposedPrice = sendOffer.getOffer().getPrice();
 
-                if (this.buyerAgent.getBooks().get(bookTitle) == null || this.buyerAgent.getBooks().get(bookTitle) < proposedPrice) {
+                if(this.buyerAgent.getBooks().get(bookTitle) != null && this.buyerAgent.getBooks().get(bookTitle) >= proposedPrice) {
+                    this.buyerAgent.getGui().updatePrice(bookTitle, proposedPrice);
+                } else {
                     this.buyerAgent.deregisterBook(bookTitle);
                     this.buyerAgent.getGui().bookPriceExceeded(bookTitle);
                 }

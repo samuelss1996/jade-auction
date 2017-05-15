@@ -43,7 +43,6 @@ public class UpdatePriceBehaviour extends TickerBehaviour {
         float oldPrice = this.sellerAgent.getBooks().getFirstValue(this.bookTitle);
         this.step = this.sellerAgent.getBooks().getSecondValue(this.bookTitle);
         this.currentPrice = oldPrice + this.step;
-        System.out.println("a");
 
         try {
             ACLMessage message = new ACLMessage(ACLMessage.CFP);
@@ -51,7 +50,7 @@ public class UpdatePriceBehaviour extends TickerBehaviour {
             message.setOntology(this.sellerAgent.getOntology().getName());
 
             if(this.addReceiversToMessage(message)) {
-                if(!this.firstTime && this.potentialWinner != null) {
+                if(!this.firstTime) {
                     this.currentPrice -= this.step;
                 }
 
@@ -70,6 +69,10 @@ public class UpdatePriceBehaviour extends TickerBehaviour {
                 this.sellerAgent.removeBook(this.bookTitle);
                 this.sellerAgent.removeBehaviour(this);
             } else {
+                if(this.firstTime) {
+                    this.currentPrice += this.step;
+                }
+
                 SendOffer sendOffer = new DefaultSendOffer();
                 Offer offer = new DefaultOffer();
                 Book book = new DefaultBook();
